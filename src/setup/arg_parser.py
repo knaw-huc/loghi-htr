@@ -239,6 +239,8 @@ def get_arg_parser():
                                         "Arabic, Hebrew and other RTL languages.")
     experimental_args.add_argument('--aug_mask', action='store_true',
                                    help="Apply mask augmentation to images, randomly masking parts of the image to improve robustness.")
+    experimental_args.add_argument('--safe_bidi', action='store_true',
+                                   help="Use a safe wrapper around python-bidi get_display to avoid assertion errors on malformed/control characters.")
 
     return parser
 

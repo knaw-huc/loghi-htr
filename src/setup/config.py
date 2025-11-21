@@ -242,7 +242,8 @@ class Config:
                 "decoding_threads": 1
             },
             "experimental": {
-                "bidirectional": args.bidirectional
+                "bidirectional": args.bidirectional,
+                "safe_bidi": args.safe_bidi
             }
         }
 

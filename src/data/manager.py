@@ -16,6 +16,37 @@ from setup.config import Config
 from utils.text import Tokenizer, normalize_text
 from bidi.algorithm import get_display
 
+# Safe bidi wrapper
+CONTROL_CHARS = {"\u202A", "\u202B", "\u202C", "\u202D", "\u202E", "\u200E", "\u200F", "\u2066", "\u2067", "\u2068", "\u2069", "\uFEFF"}
+RTL_BLOCK_RANGES = [(0x0590, 0x08FF)]  # Broad Hebrew+Arabic range
+
+def _contains_rtl(text: str) -> bool:
+    for ch in text:
+        cp = ord(ch)
+        for start, end in RTL_BLOCK_RANGES:
+            if start <= cp <= end:
+                return True
+    return False
+
+def _sanitize_bidi_text(text: str) -> str:
+    cleaned = ''.join(ch for ch in text if ch not in CONTROL_CHARS)
+    # Keep printable only (avoid triggering bidi assertions on weird codepoints)
+    cleaned = ''.join(ch for ch in cleaned if ch.isprintable())
+    return cleaned or text
+
+def safe_get_display(text: str) -> str:
+    text = _sanitize_bidi_text(text)
+    if not _contains_rtl(text):
+        return text
+    try:
+        return get_display(text)
+    except AssertionError:
+        logging.debug("safe_get_display: AssertionError on text, returning sanitized original.")
+        return text
+    except Exception as e:
+        logging.debug("safe_get_display: Exception %s on text, returning sanitized original.", e)
+        return text
+
 
 class DataManager:
     """
@@ -235,7 +266,14 @@ class DataManager:
                         file_name, ground_truth, sample_weight = data
                         partitions.append(file_name)
                         if bidirectional:
-                            ground_truth = get_display(ground_truth)
+                            if getattr(self.config.args, 'safe_bidi', False):
+                                ground_truth = safe_get_display(ground_truth)
+                            else:
+                                try:
+                                    ground_truth = get_display(ground_truth)
+                                except AssertionError:
+                                    logging.warning("python-bidi assertion encountered; falling back to safe_get_display. Consider using --safe_bidi to suppress this warning.")
+                                    ground_truth = safe_get_display(ground_truth)
                         labels.append(ground_truth)
                         sample_weights.append(str(sample_weight))
                     else:
@@ -247,8 +285,8 @@ class DataManager:
             logging.warning("Faulty lines for %s:", partition_name)
             # Sort the faulty lines by flaw
             for line, flaw in faulty_lines.items():
-                if u"\u009D" in line:
-                    line = line.replace(u"\u009D", u"")
+                if "\u009D" in line:
+                    line = line.replace("\u009D", "")
                     logging.warning("Special character found in line: %s", line)
                 # Remove the special character that is causing the output to stop
 
@@ -445,8 +483,8 @@ class DataManager:
 
     def get_train_batches(self):
         """ Get the number of batches for training """
-        return int(np.ceil(len(self.raw_data['train'][0])
-                           / self.config['batch_size']))
+        total = len(self.raw_data['train'][0])
+        return int(np.ceil(total / self.config['batch_size']))
 
     def _create_dataset(self,
                         files: List[str],
