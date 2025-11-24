@@ -117,15 +117,25 @@ def replace_final_layer(model: tf.keras.models.Model,
 
     # Find the name of the last layer before the dense or activation layers
     last_layer = ""
+    activation_layers = []
     for layer in model.layers:
         if not layer.name.startswith(("dense", "activation")):
             last_layer = layer.name
+        elif layer.name.startswith("activation"):
+            activation_layers.append(layer.name)
 
     x = layers.Dense(number_characters, name="dense_out",
                      kernel_initializer=initializer)(model.get_layer(last_layer).output)
 
     # Add a softmax activation layer with float32 data type
-    output = layers.Activation('softmax', dtype=tf.float32)(x)
+    new_name = "activation"
+    base_name= new_name
+    i = 0
+    while new_name in activation_layers:
+        i += 1
+        new_name = base_name +"_" + str(i)
+
+    output = layers.Activation('softmax', dtype=tf.float32, name=new_name)(x)
 
     # Construct the final model
     new_model = tf.keras.models.Model(
