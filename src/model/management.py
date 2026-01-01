@@ -175,8 +175,8 @@ def load_model_from_directory(directory: str,
                                               custom_objects=custom_objects,
                                               compile=compile)
         except (TypeError, ValueError) as err:
-            logging.error("Error loading model. Attempting to convert the "
-                          "model to the new format.")
+            logging.error(err)
+            logging.error("Error loading model. Attempting to convert the model to the new format.")
 
             # Convert the old model to the new format
             model = _convert_old_model_to_new(model_file, custom_objects,
