@@ -114,8 +114,8 @@ def setup_environment(config: Config) -> tf.distribute.Strategy:
     strategy = initialize_strategy(config["use_float32"], active_gpus)
 
     # print tensorflow and keras versions
-    logging.info("TensorFlow version:", tf.__version__)
-    logging.info("Keras version:", tf.keras.__version__)
+    logging.info("TensorFlow version: %", tf.__version__)
+    logging.info("Keras version: %", tf.keras.__version__)
 
     return strategy
 
