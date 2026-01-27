@@ -1,6 +1,6 @@
-# Imports
+import os
+os.environ['TF_USE_LEGACY_KERAS'] = '0'
 
-# > Standard library
 import logging
 import unittest
 import sys

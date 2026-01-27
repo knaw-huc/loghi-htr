@@ -1,15 +1,14 @@
-# Imports
+import os
+os.environ['TF_USE_LEGACY_KERAS'] = '0'
+from pathlib import Path
+import sys
+import logging
+import unittest
 
 # > Third party dependencies
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers
-
-# > Standard library
-from pathlib import Path
-import sys
-import logging
-import unittest
 
 
 class TestReplaceLayers(unittest.TestCase):

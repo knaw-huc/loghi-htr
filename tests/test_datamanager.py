@@ -1,8 +1,6 @@
-# Imports
-import argparse
-# > Standard library
-import logging
 import os
+os.environ['TF_USE_LEGACY_KERAS'] = '0'
+import logging
 from pathlib import Path
 import sys
 import tempfile

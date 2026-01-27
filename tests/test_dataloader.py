@@ -1,6 +1,5 @@
-# Imports
-
-# > Standard library
+import os
+os.environ['TF_USE_LEGACY_KERAS'] = '0'
 import logging
 from pathlib import Path
 import sys

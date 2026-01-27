@@ -1,8 +1,6 @@
-# Imports
-
-# > Standard library
-import unittest
 import os
+os.environ['TF_USE_LEGACY_KERAS'] = '0'
+import unittest
 import json
 from tempfile import TemporaryDirectory
 import logging
